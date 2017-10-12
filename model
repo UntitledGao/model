@@ -1,0 +1,72 @@
+<?php
+function con ($name,$psd,$db,$host='localhost',$code='utf8'){
+	$_SESSION['mysqli']=mysqli_connect($host,$name,$psd,$db)or die('连接数据库失败')；//链接数据库服务器并选择数据库
+	mysqli_query($_SESSION['mysqli'],'set names'.$code);//设置数据传输编码
+}
+function getList($table,$where='',$order='id desc',$limit='',$field='*'){
+	$spl="select $fieid from $table";
+	if($where!=''){
+		$sql .="where $where";
+	}
+	if($order!=''){
+		$sql .="order by $order";
+	}
+	if($limit!=''){
+		$sql .="limit $limit";
+	}
+	$res = mysqli_query($_SESSION['mysqli'],$sql);
+	if(!$res||$res->num_rows==0){
+		return false;
+	}
+	while ($row = mysqli_fetch_assoc($res)){
+		$data[]=$row;
+	}
+	return $data;
+}
+
+
+function getOne($table,$where,$field='*'){
+	$sql="select $fieid from $table where $where";//组装sql语句
+	$result=mysqli_query($_SESSION['mysqli'],$sql);
+	if(!$result||$result->num_rows==0){//如果错误或者没找到数据
+		return false;//返回假并跳出函数
+	}
+	return mysqli_fetch_assoc($result);//如果正确找到数据库返回解析后的结果
+}
+
+
+function add($table,$data){
+	$feild='';
+	$values='';
+	if(!is_array($data)){
+		return false;
+	}
+	foreach ($data as $key=>$value){
+		$feild.=$key.'';
+		$value.="'".$value."',";
+	}
+	$feild=rtrim($feild,',');
+	$values=rtrim($values,',');
+	$sql="imsert into $table ($feild) values ($values)";
+	$result=mysqli_query($_SESSION['mysqli'],$sql);
+	if($result){
+		return mysqli_insert_id($_SESSION['mysqli']);
+	}
+	else{
+		return false;
+	}
+}
+
+
+function edit($table,$data,$where){
+	$set='';
+	if(!is_array($data)){
+		return false;
+	}
+	foreach ($data as $key=>$value){
+		$set.=$key."='".$value."',";
+	}
+	$set=rtrim($set,',');
+	$sql="update $table set $set where $where";
+	return mysqli_query($_SESSION['mysqli'],$sql);
+}
